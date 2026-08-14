@@ -3,445 +3,594 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Skeptic.ai - Omnichannel Creative & Compliance Auditor</title>
+  <title>Skeptic.ai - Professional Omnichannel Auditor</title>
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          colors: {
-            brand: {
-              dark: '#0B0F17',
-              card: '#151C28',
-              accent: '#3B82F6',
-              emerald: '#10B981',
-              coral: '#F43F5E',
-              yellow: '#F59E0B'
-            }
+          colors: { 
+            brand: { cream: '#FAF9F5', coral: '#FF4B91', yellow: '#FFB800', emerald: '#10B981', dark: '#1E1B18' } 
+          },
+          boxShadow: { 
+            'glow-coral': '0 10px 30px -10px rgba(255, 75, 145, 0.3)', 
+            'glow-yellow': '0 10px 30px -10px rgba(255, 184, 0, 0.3)', 
+            'glow-emerald': '0 10px 30px -10px rgba(16, 185, 129, 0.3)', 
+            'soft': '0 20px 40px -15px rgba(0,0,0,0.05)' 
           }
         }
       }
     }
   </script>
+
+  <!-- Confetti & PDF Export Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
   <style>
-    /* Safe Zone Overlay Styling */
-    .safe-zone-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      background-size: cover;
-      background-position: center;
-      z-index: 20;
-      border-radius: 0.5rem;
+    @keyframes laserScan { 
+      0% { top: 0%; opacity: 0.8; } 
+      50% { top: 98%; opacity: 1; } 
+      100% { top: 0%; opacity: 0.8; } 
     }
-    .safe-zone-tiktok {
-      background-image: url('https://i.imgur.com/8f8K0sT.png');
-    }
-    .safe-zone-reels {
-      background-image: url('https://i.imgur.com/3Z6K0sT.png');
+    .laser-line { 
+      position: absolute; left: 0; right: 0; height: 4px; 
+      background: linear-gradient(90deg, transparent, #FF4B91, #FFB800, #FF4B91, transparent); 
+      box-shadow: 0 0 15px #FF4B91, 0 0 25px #FF4B91; 
+      animation: laserScan 2.5s infinite ease-in-out; z-index: 20; 
     }
   </style>
 </head>
-<body class="bg-brand-dark text-gray-100 font-sans min-h-screen flex flex-col">
+<body class="bg-brand-cream text-brand-dark min-h-screen font-sans antialiased selection:bg-brand-coral selection:text-white pb-20">
 
-  <!-- Header -->
-  <header class="bg-brand-card text-white p-4 shadow-md flex justify-between items-center border-b border-gray-800">
-    <div class="flex items-center space-x-2">
-      <span class="text-xl font-black tracking-tight text-brand-emerald">SKEPTIC.AI</span>
-      <span class="text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded-full font-mono border border-gray-700">v1.2</span>
-    </div>
-    <button onclick="toggleHistoryDrawer()" class="text-xs font-bold bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded-lg border border-gray-700 transition">
-      📜 Audit History
-    </button>
-  </header>
-
-  <!-- Main Workspace -->
-  <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-    <!-- Left Panel: Input Form -->
-    <section class="lg:col-span-5 bg-brand-card p-5 rounded-2xl border border-gray-800 shadow-xl flex flex-col space-y-4">
-      <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-800 pb-2">Audit Setup</h2>
-
-      <!-- Target Platform -->
-      <div>
-        <label class="block text-xs font-bold text-gray-400 mb-1">Target Platform</label>
-        <select id="platformSelect" class="w-full text-xs p-2.5 rounded-lg bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-brand-emerald" onchange="toggleSafeZone()">
-          <option value="Instagram & Meta">Instagram & Meta</option>
-          <option value="TikTok">TikTok</option>
-          <option value="Google Ads (Display/PMax)">Google Ads (Display/PMax)</option>
-          <option value="Pinterest">Pinterest</option>
-          <option value="LinkedIn">LinkedIn</option>
-        </select>
-      </div>
-
-      <!-- Format & Objective -->
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="block text-xs font-bold text-gray-400 mb-1">Content Format</label>
-          <select id="formatSelect" class="w-full text-xs p-2.5 rounded-lg bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-brand-emerald" onchange="handleFormatChange()">
-            <option value="Static Graphic / Image">Static Graphic</option>
-            <option value="Carousel Deck">Carousel Deck</option>
-            <option value="Written Copy Only">Written Copy Only</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-400 mb-1">Post Objective</label>
-          <select id="purposeSelect" class="w-full text-xs p-2.5 rounded-lg bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-brand-emerald">
-            <option value="🛒 Product Showcase / Catalog">🛒 Product Showcase / Catalog</option>
-            <option value="🎯 Direct Response Conversion">🎯 Direct Response Conversion</option>
-            <option value="🚀 Brand Awareness & Engagement">🚀 Brand Awareness</option>
-            <option value="📢 Lead Generation">📢 Lead Generation</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Target Persona / Niche Input -->
-      <div>
-        <label class="block text-xs font-bold text-gray-400 mb-1">Target Persona / Niche (Optional)</label>
-        <input 
-          type="text" 
-          id="audienceInput" 
-          placeholder="e.g., Gen Z Skincare, B2B SaaS Founders, Busy Moms" 
-          class="w-full text-xs p-2.5 rounded-lg bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-brand-emerald placeholder-gray-500"
-        />
-      </div>
-
-      <!-- Media Upload Zone -->
-      <div id="mediaUploadContainer">
-        <label class="block text-xs font-bold text-gray-400 mb-1">Upload Creative</label>
-        <div id="dropZone" class="border-2 border-dashed border-gray-700 hover:border-brand-emerald rounded-xl p-6 text-center cursor-pointer transition bg-gray-900/50">
-          <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
-          <div class="space-y-1">
-            <span class="text-2xl">📁</span>
-            <p class="text-xs font-bold text-gray-300" id="dropLabel">Drag & Drop or Click to Upload</p>
-            <p class="text-[10px] text-gray-500">PNG, JPG, WebP up to 10MB</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Copy Input (Shown for Written Copy Only) -->
-      <div id="textInputWrapper" class="hidden">
-        <label class="block text-xs font-bold text-gray-400 mb-1">Ad Copy / Script Text</label>
-        <textarea id="textCopyInput" rows="4" placeholder="Paste your primary ad copy or caption script here..." class="w-full text-xs p-2.5 rounded-lg bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-brand-emerald resize-none"></textarea>
-      </div>
-
-      <!-- Run Button -->
-      <button onclick="runAudit()" id="submitBtn" class="w-full py-3 bg-brand-emerald hover:bg-emerald-600 text-gray-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition flex items-center justify-center space-x-2">
-        <span>🔍 Run Omnichannel Audit</span>
-      </button>
-    </section>
-
-    <!-- Right Panel: Results & Diagnostics -->
-    <section class="lg:col-span-7 bg-brand-card p-5 rounded-2xl border border-gray-800 shadow-xl flex flex-col justify-between">
-      
-      <!-- Preview Card with Safe Zone Toggle -->
-      <div id="previewCard" class="hidden border-b border-gray-800 pb-4 mb-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold text-gray-400">Creative Preview</span>
-          <div class="flex items-center space-x-2">
-            <span class="text-[11px] font-bold text-gray-400">Platform Safe-Zone Grid</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="safeZoneToggle" class="sr-only peer" onchange="toggleSafeZone()">
-              <div class="w-8 h-4 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-emerald"></div>
-            </label>
-          </div>
-        </div>
-        <div class="relative overflow-hidden rounded-lg bg-gray-950 flex justify-center max-h-64 border border-gray-800">
-          <img id="imagePreview" class="max-h-64 object-contain rounded-lg hidden" alt="Uploaded Preview" />
-          <div id="safeZoneOverlay" class="safe-zone-overlay hidden"></div>
-        </div>
-      </div>
-
-      <!-- Results Workspace -->
-      <div id="resultsWorkspace" class="hidden flex-1 flex flex-col justify-between space-y-4">
-        <div>
-          <!-- Overall Header -->
-          <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-3">
-            <div>
-              <h3 class="text-base font-black text-gray-100">Audit Diagnostic</h3>
-              <p class="text-xs text-gray-400">Compliance & Performance Evaluation</p>
-            </div>
-            <div class="text-right">
-              <span class="text-3xl font-black text-brand-emerald" id="overallScore">--</span>
-              <span class="text-[10px] text-gray-400 block font-medium uppercase">Overall Score</span>
-            </div>
-          </div>
-
-          <!-- Parameter Itemized Ratings -->
-          <div id="parameterBreakdown" class="space-y-1 my-3"></div>
-
-          <!-- Diagnostic Feedback -->
-          <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-800 text-xs text-gray-300 leading-relaxed space-y-2 mt-3" id="analysisContent">
-          </div>
-        </div>
-
-        <!-- AI Redesign Prompt Helper -->
-        <div class="mt-4 p-3 rounded-xl border border-gray-800 bg-gray-900/40 flex flex-col space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-gray-400">🎨 Redesign Helper</span>
-            <button onclick="generateFixPrompt()" class="text-[11px] font-bold bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 px-2.5 py-1 rounded-md transition">
-              Generate AI Image Prompt
-            </button>
-          </div>
-          <div id="aiPromptOutput" class="hidden p-2.5 bg-gray-950 rounded-lg border border-gray-800 text-[11px] text-brand-emerald font-mono select-all break-words"></div>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div id="emptyState" class="flex-1 flex flex-col items-center justify-center text-center p-8 text-gray-500 space-y-2">
-        <span class="text-4xl">⚡</span>
-        <p class="text-xs font-bold text-gray-300">No Active Audit</p>
-        <p class="text-[11px] max-w-xs">Upload a creative image or copy on the left to run an automated AI diagnostic.</p>
-      </div>
-
-      <!-- Loading State -->
-      <div id="loadingState" class="hidden flex-1 flex flex-col items-center justify-center text-center p-8 space-y-3">
-        <div class="w-8 h-8 border-4 border-brand-emerald border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-xs font-bold text-gray-200">Evaluating Visual & Copy Assets...</p>
-        <p class="text-[10px] text-gray-500">Checking policy guidelines, hook strength, and design hierarchy</p>
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- History Drawer -->
-  <div id="historyDrawer" class="fixed inset-y-0 right-0 w-80 bg-brand-card shadow-2xl border-l border-gray-800 p-5 transform translate-x-full transition-transform duration-300 z-50 flex flex-col justify-between">
-    <div>
-      <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-3">
-        <h3 class="text-sm font-bold text-gray-200">Audit History</h3>
-        <button onclick="toggleHistoryDrawer()" class="text-xs text-gray-400 hover:text-gray-200 font-bold">✕</button>
-      </div>
-      <div id="historyList" class="space-y-2 max-h-[75vh] overflow-y-auto"></div>
-    </div>
-    <button onclick="clearHistory()" class="w-full text-center text-xs text-brand-coral hover:underline font-bold py-2 border-t border-gray-800">
-      Clear Audit History
-    </button>
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-brand-dark text-white px-5 py-3 rounded-2xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center space-x-2 font-medium text-sm">
+    <svg class="w-5 h-5 text-brand-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span id="toast-message">Copied to clipboard!</span>
   </div>
 
+  <!-- History Drawer -->
+  <div id="historyDrawer" class="fixed inset-y-0 right-0 w-80 sm:w-96 bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 p-6 overflow-y-auto">
+    <div class="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+      <h2 class="text-lg font-black text-brand-dark">📜 Audit History</h2>
+      <button id="closeHistoryBtn" class="text-gray-400 hover:text-brand-dark font-black text-xl">&times;</button>
+    </div>
+    <div id="historyList" class="space-y-3">
+      <p class="text-xs text-gray-400 italic">No previous audits found in local storage.</p>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="max-w-7xl mx-auto px-6 pt-8 pb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center space-x-3">
+      <div class="relative w-12 h-12 bg-white rounded-2xl shadow-glow-coral flex items-center justify-center border-2 border-brand-coral/20">
+        <svg class="w-7 h-7 text-brand-coral" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path stroke-linecap="round" d="M20 20l-4.35-4.35"></path></svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-black tracking-tight text-brand-dark flex items-center gap-1">Skeptic<span class="text-brand-coral">.ai</span></h1>
+        <p class="text-xs font-bold uppercase tracking-wider text-gray-400">Omnichannel Creative & Copy Auditor</p>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-3 w-full sm:w-auto">
+      <button id="openHistoryBtn" class="bg-white border border-gray-200 px-4 py-2 rounded-2xl text-xs font-bold text-brand-dark hover:border-brand-coral transition-all shadow-soft whitespace-nowrap">📜 History</button>
+      <div class="flex items-center space-x-2 bg-white p-2 pl-4 rounded-2xl shadow-soft border border-gray-100 w-full sm:w-auto">
+        <span class="text-xs font-black text-gray-400 uppercase tracking-wider whitespace-nowrap">API Key:</span>
+        <input type="password" id="userApiKey" placeholder="Paste Gemini API Key Here" class="text-xs bg-brand-cream border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-brand-coral w-full sm:w-60 font-mono">
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 mt-2">
+    <!-- Controls Panel -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-soft border border-gray-100 mb-8">
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <!-- 1. Platform -->
+        <div class="bg-brand-cream p-3 rounded-2xl border border-gray-200/80">
+          <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1 pl-1">Target Platform:</label>
+          <select id="platformSelect" class="w-full bg-white text-sm font-bold text-brand-dark py-2 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-coral">
+            <option value="Instagram & Meta">📸 Instagram & Meta</option>
+            <option value="TikTok">🎵 TikTok</option>
+            <option value="LinkedIn">💼 LinkedIn</option>
+            <option value="Google Business Profile (GMB)">📍 Google Business Profile (Local GMB)</option>
+            <option value="Google Ads (Display/PMax)">🎯 Google Ads (Display / Performance Max)</option>
+            <option value="YouTube">🔴 YouTube (Shorts/Videos)</option>
+            <option value="Pinterest">📌 Pinterest</option>
+          </select>
+        </div>
+
+        <!-- 2. Post Purpose -->
+        <div class="bg-brand-cream p-3 rounded-2xl border border-gray-200/80">
+          <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1 pl-1">Post Objective:</label>
+          <select id="purposeSelect" class="w-full bg-white text-sm font-bold text-brand-dark py-2 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-coral">
+            <option value="Paid Ad (Direct Response)">⚡ Paid Ad (Conversion / Direct Response)</option>
+            <option value="Organic Engagement">💬 Organic Social (Reach & Engagement)</option>
+            <option value="Local Business & Foot Traffic">🏪 Local Business & Foot Traffic</option>
+            <option value="E-Commerce Catalog">🛒 Product Showcase / Catalog</option>
+            <option value="B2B Thought Leadership">🎓 Thought Leadership & Authority</option>
+          </select>
+        </div>
+
+        <!-- 3. Format -->
+        <div class="bg-brand-cream p-3 rounded-2xl border border-gray-200/80">
+          <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-1 pl-1">Content Format:</label>
+          <select id="formatSelect" class="w-full bg-white text-sm font-bold text-brand-dark py-2 px-3 rounded-xl border border-gray-200 focus:outline-none focus:border-brand-coral">
+            <option value="Static Graphic / Image">🖼️ Static Graphic / Photo</option>
+            <option value="Short-Form Video Script">📱 Short-Form Video / Script</option>
+            <option value="Multi-Slide Carousel">🎠 Multi-Slide Carousel / PDF Deck</option>
+            <option value="Infographic">📊 Infographic / Data Graphic</option>
+            <option value="Story / Temporary Visual">⌛ Story / Vertical Visual</option>
+            <option value="Written Copy Only">✍️ Written Copy / Text Caption Only</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Text input for written copy mode -->
+      <div id="textInputWrapper" class="hidden mb-6">
+        <label class="block text-xs font-black text-gray-400 uppercase tracking-wider mb-2">Paste Content Copy / Script / Text:</label>
+        <textarea id="textCopyInput" rows="4" placeholder="Paste caption, video script breakdown, or slide text here..." class="w-full bg-brand-cream p-4 border border-gray-200 rounded-2xl focus:outline-none focus:border-brand-coral font-medium text-sm"></textarea>
+      </div>
+
+      <!-- Upload Zone -->
+      <div id="dropZone" class="relative group border-3 border-dashed border-brand-coral/40 hover:border-brand-coral bg-rose-50/30 hover:bg-rose-50/80 rounded-3xl p-8 text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-center">
+        <input type="file" id="fileInput" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30">
+        <div class="w-12 h-12 bg-white rounded-2xl shadow-glow-coral flex items-center justify-center mb-3 group-hover:scale-110 transition-all duration-300">
+          <svg class="w-6 h-6 text-brand-coral" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        </div>
+        <p id="uploadPrompt" class="text-sm font-bold text-brand-dark">Drag & drop asset(s) here, or <span class="text-brand-coral underline">browse files</span></p>
+        <p id="uploadFormatRules" class="text-xs text-gray-400 mt-1">Supports PNG, JPG, WebP (Upload multiple files for Batch Mode)</p>
+      </div>
+
+      <!-- Unselect / Clear Uploads Button -->
+      <div id="clearAssetContainer" class="hidden mt-4 flex justify-end">
+        <button id="clearAssetBtn" class="bg-rose-100 text-rose-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-rose-200 transition-all flex items-center space-x-1">
+          <span>🗑️ Remove / Clear Uploaded Asset(s)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Batch Selection Grid -->
+    <div id="batchContainer" class="hidden bg-white p-6 rounded-3xl shadow-soft border border-gray-100 mb-8">
+      <h3 class="text-sm font-black uppercase tracking-wider text-gray-400 mb-4">📦 Batch Upload Variations (<span id="batchCount">0</span> Assets)</h3>
+      <div id="batchGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4"></div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div id="resultsWorkspace" class="hidden space-y-8">
+      
+      <!-- Export PDF Header Bar -->
+      <div class="flex items-center justify-between bg-white p-4 px-6 rounded-2xl shadow-soft border border-gray-100">
+        <div class="flex items-center space-x-2">
+          <span class="w-3 h-3 rounded-full bg-brand-emerald animate-pulse"></span>
+          <span class="text-xs font-black uppercase tracking-wider text-gray-500">Live Audit Dashboard</span>
+        </div>
+        <button id="exportPdfBtn" class="bg-brand-dark text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-black transition-all flex items-center space-x-2 shadow-md">
+          <svg class="w-4 h-4 text-brand-coral" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>Export PDF Report</span>
+        </button>
+      </div>
+
+      <!-- Printable Report Container -->
+      <div id="pdfReportContent" class="space-y-8 bg-brand-cream p-2">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          <!-- Asset Preview Card -->
+          <div id="previewCard" class="lg:col-span-5 bg-white p-6 rounded-3xl shadow-soft border border-gray-100 flex flex-col items-center justify-between relative overflow-hidden min-h-[300px]">
+            <div class="relative w-full rounded-2xl overflow-hidden bg-gray-900 shadow-md">
+              <img id="imagePreview" class="w-full h-auto max-h-[380px] object-contain mx-auto block hidden" src="" alt="Asset Preview">
+              <div id="laserScan" class="laser-line hidden"></div>
+            </div>
+            
+            <div class="w-full space-y-2 mt-6">
+              <button id="auditBtn" class="w-full bg-brand-coral text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-brand-coral/30 hover:scale-[1.01] active:scale-95 transition-all">Run Comprehensive Audit 🚀</button>
+            </div>
+          </div>
+
+          <!-- Top Metrics & Dynamic Verdict -->
+          <div class="lg:col-span-7 space-y-6 flex flex-col justify-between">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="bg-white p-6 rounded-3xl shadow-glow-coral border border-rose-100 flex flex-col justify-between">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-gray-400">Stopping Power</span>
+                <div class="my-2"><span id="scoreValue" class="text-5xl font-black text-brand-coral">--</span><span class="text-gray-400 text-lg font-bold">/100</span></div>
+                <div class="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden"><div id="scoreBar" class="bg-brand-coral h-full w-0 transition-all duration-1000"></div></div>
+              </div>
+              <div class="bg-white p-6 rounded-3xl shadow-glow-emerald border border-emerald-100 flex flex-col justify-between">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-gray-400">Platform Fit</span>
+                <div class="my-2"><span id="ctrValue" class="text-3xl font-black text-brand-emerald">--</span></div>
+                <p class="text-xs font-medium text-gray-400">Native Alignment</p>
+              </div>
+              <div class="bg-white p-6 rounded-3xl shadow-glow-yellow border border-amber-100 flex flex-col justify-between">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-gray-400">Visual Friction</span>
+                <div class="my-2"><span id="clutterValue" class="text-3xl font-black text-brand-yellow">--</span></div>
+                <p class="text-xs font-medium text-gray-400">Cognitive Load</p>
+              </div>
+            </div>
+
+            <!-- Granular Parameter Score Breakdown -->
+            <div class="bg-white p-6 rounded-3xl shadow-soft border border-gray-100">
+              <h3 class="text-xs font-extrabold uppercase tracking-wider text-gray-400 mb-3">Itemized Parameter Breakdown</h3>
+              <div id="parameterBreakdown" class="space-y-2">
+                <p class="text-xs text-gray-400 italic">Parameters will evaluate after running audit.</p>
+              </div>
+            </div>
+
+            <!-- Verdict -->
+            <div class="bg-white p-6 rounded-3xl shadow-soft border border-gray-100">
+              <h3 class="text-xs font-extrabold uppercase tracking-wider text-brand-coral mb-2">Detailed Strategic Diagnostic</h3>
+              <div id="verdictText" class="text-brand-dark font-medium leading-relaxed text-sm whitespace-pre-line">Awaiting creative evaluation...</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Recommendations -->
+        <div class="bg-white p-8 rounded-3xl shadow-soft border border-gray-100">
+          <h3 class="text-base font-extrabold text-brand-dark mb-4 flex items-center gap-2">🛠️ Targeted Optimization Recommendations</h3>
+          <div id="frictionList" class="space-y-3">
+            <div class="text-xs text-gray-400 italic">Recommendations will appear here after analysis.</div>
+          </div>
+        </div>
+
+        <!-- Copywriting Suite -->
+        <div class="bg-white p-8 rounded-3xl shadow-soft border border-gray-100">
+          <h3 class="text-base font-extrabold text-brand-dark mb-1">✍️ Native Copy & Hook Suite</h3>
+          <p class="text-xs text-gray-400 mb-6">Click elements below to copy tailored headlines and caption text.</p>
+
+          <div class="space-y-6">
+            <div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-gray-400 block mb-3">Recommended Platform On-Screen Hooks / Headlines</span>
+              <div id="headlinesContainer" class="flex flex-wrap gap-3">
+                <div class="text-xs text-gray-400 italic">Headlines will be generated here.</div>
+              </div>
+            </div>
+
+            <div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-gray-400 block mb-3">Optimized Post Caption & Hashtag Suite</span>
+              <div id="bodyCopyBox" class="p-4 rounded-2xl bg-brand-cream border border-gray-200 text-brand-dark text-sm leading-relaxed cursor-pointer hover:border-brand-coral transition-all">
+                <span class="text-gray-400 italic">Generated caption text will appear here.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
   <script>
-    let activeAsset = null;
-    let auditHistory = [];
+    // State Management
+    let assetQueue = [];
+    let activeAssetIndex = 0;
+    let auditHistory = JSON.parse(localStorage.getItem('skeptic_audit_history') || '[]');
 
-    document.getElementById('dropZone').onclick = () => document.getElementById('fileInput').click();
+    // DOM Elements
+    const userApiKeyInput = document.getElementById('userApiKey');
+    const platformSelect = document.getElementById('platformSelect');
+    const purposeSelect = document.getElementById('purposeSelect');
+    const formatSelect = document.getElementById('formatSelect');
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const textInputWrapper = document.getElementById('textInputWrapper');
+    const textCopyInput = document.getElementById('textCopyInput');
+    const resultsWorkspace = document.getElementById('resultsWorkspace');
+    const previewCard = document.getElementById('previewCard');
+    const imagePreview = document.getElementById('imagePreview');
+    const laserScan = document.getElementById('laserScan');
+    const auditBtn = document.getElementById('auditBtn');
+    const batchContainer = document.getElementById('batchContainer');
+    const batchGrid = document.getElementById('batchGrid');
+    const batchCount = document.getElementById('batchCount');
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    const clearAssetContainer = document.getElementById('clearAssetContainer');
+    const clearAssetBtn = document.getElementById('clearAssetBtn');
 
-    function handleFormatChange() {
-      const format = document.getElementById('formatSelect').value;
-      const mediaContainer = document.getElementById('mediaUploadContainer');
-      const textWrapper = document.getElementById('textInputWrapper');
+    // Drawer Elements
+    const openHistoryBtn = document.getElementById('openHistoryBtn');
+    const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+    const historyDrawer = document.getElementById('historyDrawer');
+    const historyList = document.getElementById('historyList');
 
-      if (format === 'Written Copy Only') {
-        mediaContainer.classList.add('hidden');
-        textWrapper.classList.remove('hidden');
-      } else {
-        mediaContainer.classList.remove('hidden');
-        textWrapper.classList.add('hidden');
+    // Persist API Key
+    if (localStorage.getItem('skeptic_gemini_key')) {
+      userApiKeyInput.value = localStorage.getItem('skeptic_gemini_key');
+    }
+    userApiKeyInput.addEventListener('input', () => {
+      localStorage.setItem('skeptic_gemini_key', userApiKeyInput.value.trim());
+    });
+
+    // History Drawer Logic
+    openHistoryBtn.onclick = () => { renderHistoryDrawer(); historyDrawer.classList.remove('translate-x-full'); };
+    closeHistoryBtn.onclick = () => { historyDrawer.classList.add('translate-x-full'); };
+
+    function renderHistoryDrawer() {
+      historyList.innerHTML = '';
+      if (auditHistory.length === 0) {
+        historyList.innerHTML = '<p class="text-xs text-gray-400 italic">No previous audits stored.</p>';
+        return;
       }
+      auditHistory.slice().reverse().forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'p-3 bg-brand-cream rounded-xl border border-gray-200 hover:border-brand-coral cursor-pointer transition-all';
+        card.innerHTML = `
+          <div class="flex items-center justify-between text-xs font-bold mb-1">
+            <span class="text-brand-coral">${item.platform}</span>
+            <span class="text-brand-dark font-black">${item.score}/100</span>
+          </div>
+          <p class="text-xs text-gray-500 truncate">${item.timestamp}</p>
+        `;
+        card.onclick = () => {
+          renderDashboardAnalytics(item.data);
+          resultsWorkspace.classList.remove('hidden');
+          historyDrawer.classList.add('translate-x-full');
+        };
+        historyList.appendChild(card);
+      });
     }
 
-    function handleFileSelect(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+    // Clear Uploaded Assets
+    clearAssetBtn.onclick = () => {
+      assetQueue = [];
+      fileInput.value = '';
+      imagePreview.src = '';
+      imagePreview.classList.add('hidden');
+      batchContainer.classList.add('hidden');
+      resultsWorkspace.classList.add('hidden');
+      clearAssetContainer.classList.add('hidden');
+      showToast("Cleared uploaded asset(s)");
+    };
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target.result;
-        const base64Data = dataUrl.split(',')[1];
-        
-        activeAsset = { mimeType: file.type, base64: base64Data, dataUrl: dataUrl };
-        document.getElementById('dropLabel').innerText = `Loaded: ${file.name}`;
-        
-        const previewImg = document.getElementById('imagePreview');
-        previewImg.src = dataUrl;
-        previewImg.classList.remove('hidden');
-        document.getElementById('previewCard').classList.remove('hidden');
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function toggleSafeZone() {
-      const isChecked = document.getElementById('safeZoneToggle').checked;
-      const overlay = document.getElementById('safeZoneOverlay');
-      const selectedPlatform = document.getElementById('platformSelect').value;
-
-      if (isChecked) {
-        overlay.classList.remove('hidden');
-        if (selectedPlatform.toLowerCase().includes('tiktok')) {
-          overlay.className = 'safe-zone-overlay safe-zone-tiktok';
-        } else {
-          overlay.className = 'safe-zone-overlay safe-zone-reels';
-        }
+    // Format Selection Toggle
+    formatSelect.addEventListener('change', () => {
+      if (formatSelect.value === 'Written Copy Only') {
+        textInputWrapper.classList.remove('hidden');
+        dropZone.classList.add('hidden');
+        previewCard.classList.add('hidden');
+        resultsWorkspace.classList.remove('hidden');
       } else {
-        overlay.classList.add('hidden');
+        textInputWrapper.classList.add('hidden');
+        dropZone.classList.remove('hidden');
+        previewCard.classList.remove('hidden');
       }
+    });
+
+    // File Input / Drag and Drop Processing
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+    ['dragenter', 'dragover'].forEach(e => dropZone.addEventListener(e, (ev) => { ev.preventDefault(); dropZone.classList.add('bg-rose-100/50'); }));
+    ['dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, (ev) => { ev.preventDefault(); dropZone.classList.remove('bg-rose-100/50'); }));
+    dropZone.addEventListener('drop', (e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); });
+
+    function handleFiles(files) {
+      if (!files.length) return;
+      assetQueue = [];
+      batchGrid.innerHTML = '';
+
+      let loaded = 0;
+      Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          assetQueue.push({
+            dataUrl: evt.target.result,
+            base64: evt.target.result.split(',')[1],
+            mimeType: file.type,
+            fileName: file.name
+          });
+          loaded++;
+
+          if (loaded === files.length) {
+            setupQueueUI();
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
 
-    async function runAudit() {
-      const platform = document.getElementById('platformSelect').value;
-      const format = document.getElementById('formatSelect').value;
-      const purpose = document.getElementById('purposeSelect').value;
-      const audience = document.getElementById('audienceInput').value.trim() || 'General Target Audience';
+    function setupQueueUI() {
+      resultsWorkspace.classList.remove('hidden');
+      clearAssetContainer.classList.remove('hidden');
+      resultsWorkspace.scrollIntoView({ behavior: 'smooth' });
 
-      if (format !== 'Written Copy Only' && !activeAsset) {
-        alert('Please upload a creative asset first.');
+      if (assetQueue.length > 1) {
+        batchContainer.classList.remove('hidden');
+        batchCount.innerText = assetQueue.length;
+        assetQueue.forEach((item, idx) => {
+          const thumb = document.createElement('div');
+          thumb.className = `relative rounded-xl overflow-hidden border-2 cursor-pointer transition-all ${idx === 0 ? 'border-brand-coral scale-105' : 'border-gray-200'}`;
+          thumb.innerHTML = `<img src="${item.dataUrl}" class="w-full h-20 object-cover">`;
+          thumb.onclick = () => {
+            activeAssetIndex = idx;
+            document.querySelectorAll('#batchGrid > div').forEach(el => el.classList.replace('border-brand-coral', 'border-gray-200'));
+            thumb.classList.replace('border-gray-200', 'border-brand-coral');
+            imagePreview.src = item.dataUrl;
+          };
+          batchGrid.appendChild(thumb);
+        });
+      } else {
+        batchContainer.classList.add('hidden');
+      }
+
+      activeAssetIndex = 0;
+      imagePreview.src = assetQueue[0].dataUrl;
+      imagePreview.classList.remove('hidden');
+    }
+
+    // Call API with Dual Diagnostic Compliance Prompt
+    auditBtn.addEventListener('click', runOmnichannelAuditorCall);
+
+    async function runOmnichannelAuditorCall() {
+      const apiKey = userApiKeyInput.value.trim();
+      const platform = platformSelect.value;
+      const purpose = purposeSelect.value;
+      const format = formatSelect.value;
+
+      if (!apiKey) {
+        alert("Please paste your Gemini API key in the top header!");
+        userApiKeyInput.focus();
         return;
       }
 
-      document.getElementById('emptyState').classList.add('hidden');
-      document.getElementById('resultsWorkspace').classList.add('hidden');
-      document.getElementById('loadingState').classList.remove('hidden');
+      laserScan.classList.remove('hidden');
+      auditBtn.disabled = true;
+      auditBtn.innerText = "Analyzing Content & Compliance... 🧠";
 
-      const promptText = `Analyze this ${format} designed for ${platform} aiming for "${purpose}". 
-TARGET DEMOGRAPHIC: ${audience}.
-Perform a dual diagnostic:
-1. COMPLIANCE & POLICY CHECK: Verify strict platform compliance and suitability for ${audience}.
-2. PERFORMANCE & CREATIVE EVALUATION: Evaluate visual hierarchy, messaging clarity, hook strength, and platform alignment.
-IMPORTANT: Return ALL scores and parameter ratings on a 0-100 scale (not 1-10).
-Provide actionable agency-level feedback without truncating recommendations.`;
+      const promptText = `Analyze this ${format} designed for ${platform} aiming for "${purpose}". Perform a dual diagnostic: 1. COMPLIANCE & POLICY CHECK: Verify strict platform compliance (e.g., Personal Attributes rules on Meta, forbidden interactive overlays on TikTok, claim substantiation, safe zones). 2. PERFORMANCE & CREATIVE EVALUATION: Evaluate visual hierarchy, message clarity, hook strength, and platform alignment. Provide actionable agency-level feedback without truncating recommendations.`;
 
-      const contentsParts = [{ text: promptText }];
-      if (format !== 'Written Copy Only' && activeAsset) {
-        contentsParts.push({ inlineData: { mimeType: activeAsset.mimeType, data: activeAsset.base64 } });
-      } else {
-        contentsParts.push({ text: `Ad Copy Script: "${document.getElementById('textCopyInput').value}"` });
-      }
+      const jsonSchema = {
+        type: "OBJECT",
+        properties: {
+          score: { type: "INTEGER" },
+          ctr: { type: "STRING" },
+          friction: { type: "STRING" },
+          parameters: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                name: { type: "STRING" },
+                rating: { type: "INTEGER" },
+                status: { type: "STRING" }
+              },
+              required: ["name", "rating", "status"]
+            }
+          },
+          verdict: { type: "STRING" },
+          fixes: {
+            type: "ARRAY",
+            items: { type: "STRING" }
+          },
+          headlines: {
+            type: "ARRAY",
+            items: { type: "STRING" }
+          },
+          caption: { type: "STRING" }
+        },
+        required: ["score", "ctr", "friction", "parameters", "verdict", "fixes", "headlines", "caption"]
+      };
 
       try {
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+        let parts = [{ text: promptText }];
+        if (format !== 'Written Copy Only' && assetQueue.length > 0) {
+          const currentAsset = assetQueue[activeAssetIndex];
+          parts.push({ inlineData: { mimeType: currentAsset.mimeType, data: currentAsset.base64 } });
+        } else if (format === 'Written Copy Only') {
+          parts.push({ text: `User Content Copy: "${textCopyInput.value}"` });
+        }
+
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [{ parts: contentsParts }],
+            contents: [{ parts: parts }],
             generationConfig: {
               responseMimeType: "application/json",
-              responseSchema: {
-                type: "OBJECT",
-                properties: {
-                  score: { type: "NUMBER" },
-                  parameters: {
-                    type: "ARRAY",
-                    items: {
-                      type: "OBJECT",
-                      properties: {
-                        name: { type: "STRING" },
-                        rating: { type: "NUMBER" },
-                        status: { type: "STRING" }
-                      },
-                      required: ["name", "rating", "status"]
-                    }
-                  },
-                  policyIssues: { type: "ARRAY", items: { type: "STRING" } },
-                  creativeFixes: { type: "ARRAY", items: { type: "STRING" } },
-                  summary: { type: "STRING" }
-                },
-                required: ["score", "parameters", "policyIssues", "creativeFixes", "summary"]
-              }
+              responseSchema: jsonSchema
             }
           })
         });
 
-        const jsonResult = await response.json();
-        const parsedData = JSON.parse(jsonResult.candidates[0].content.parts[0].text);
-        
-        renderDashboardAnalytics(parsedData);
+        const json = await res.json();
+        if (json.error) throw new Error(json.error.message);
 
+        const parsedResult = JSON.parse(json.candidates[0].content.parts[0].text);
+        
+        renderDashboardAnalytics(parsedResult);
+
+        // Store in local history
         auditHistory.push({
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           platform: platform,
-          score: parsedData.score,
-          data: parsedData
+          score: parsedResult.score,
+          data: parsedResult
         });
-        updateHistoryDrawer();
+        localStorage.setItem('skeptic_audit_history', JSON.stringify(auditHistory));
 
       } catch (err) {
-        alert("An error occurred during evaluation. Please try again.");
+        alert("API Error: " + err.message);
         console.error(err);
       } finally {
-        document.getElementById('loadingState').classList.add('hidden');
-        document.getElementById('resultsWorkspace').classList.remove('hidden');
+        laserScan.classList.add('hidden');
+        auditBtn.disabled = false;
+        auditBtn.innerText = "Run Comprehensive Audit 🚀";
       }
     }
 
     function renderDashboardAnalytics(data) {
-      document.getElementById('overallScore').innerText = `${data.score}/100`;
+      document.getElementById('scoreValue').innerText = data.score;
+      document.getElementById('scoreBar').style.width = `${data.score}%`;
+      document.getElementById('ctrValue').innerText = data.ctr;
+      document.getElementById('clutterValue').innerText = data.friction;
+      document.getElementById('verdictText').innerText = data.verdict;
 
-      // Auto-scaling 1-10 scores up to 100 for parameter breakdown
+      // Itemized Parameters Breakdown
       const paramContainer = document.getElementById('parameterBreakdown');
       paramContainer.innerHTML = '';
       data.parameters.forEach(param => {
-        let normalizedRating = param.rating <= 10 ? param.rating * 10 : param.rating;
-
         const row = document.createElement('div');
-        row.className = 'flex items-center justify-between text-xs py-1.5 border-b border-gray-800';
-        let colorClass = normalizedRating >= 80 ? 'text-brand-emerald' : (normalizedRating >= 60 ? 'text-brand-yellow' : 'text-brand-coral');
+        row.className = 'flex items-center justify-between text-xs py-1 border-b border-gray-50';
+        let colorClass = param.rating >= 80 ? 'text-brand-emerald' : (param.rating >= 60 ? 'text-brand-yellow' : 'text-brand-coral');
         row.innerHTML = `
-          <span class="font-bold text-gray-300">${param.name}</span>
+          <span class="font-bold text-gray-600">${param.name}</span>
           <div class="flex items-center space-x-2">
-            <span class="font-black ${colorClass}">${normalizedRating}/100</span>
-            <span class="text-gray-500 font-medium">(${param.status})</span>
+            <span class="font-black ${colorClass}">${param.rating}/100</span>
+            <span class="text-gray-400 font-medium">(${param.status})</span>
           </div>
         `;
         paramContainer.appendChild(row);
       });
 
-      const analysisContent = document.getElementById('analysisContent');
-      analysisContent.innerHTML = `
-        <p><strong class="text-gray-100">Summary:</strong> ${data.summary}</p>
-        ${data.policyIssues.length ? `<p class="text-brand-coral font-bold">⚠️ Policy Notes: ${data.policyIssues.join(', ')}</p>` : ''}
-        <div>
-          <strong class="text-gray-100">Key Fixes & Recommendations:</strong>
-          <ul class="list-disc list-inside mt-1 space-y-0.5 text-gray-300">
-            ${data.creativeFixes.map(fix => `<li>${fix}</li>`).join('')}
-          </ul>
-        </div>
-      `;
-    }
-
-    function generateFixPrompt() {
-      const platform = document.getElementById('platformSelect').value;
-      const purpose = document.getElementById('purposeSelect').value;
-      const audience = document.getElementById('audienceInput').value.trim() || 'target audience';
-      const output = document.getElementById('aiPromptOutput');
-
-      const generatedPrompt = `High-converting ad creative for ${platform}, objective: ${purpose}, targeting: ${audience}. Clean visual composition, high contrast, studio lighting, bold visual hook, optimized for high CTR --ar 4:5 --v 6.0`;
-
-      output.innerText = generatedPrompt;
-      output.classList.remove('hidden');
-    }
-
-    function toggleHistoryDrawer() {
-      document.getElementById('historyDrawer').classList.toggle('translate-x-full');
-    }
-
-    function updateHistoryDrawer() {
-      const list = document.getElementById('historyList');
-      list.innerHTML = '';
-      auditHistory.forEach((item) => {
-        const card = document.createElement('div');
-        card.className = 'p-2.5 bg-gray-900 rounded-lg border border-gray-800 text-xs hover:border-gray-700 cursor-pointer transition flex justify-between items-center';
-        card.innerHTML = `
-          <div>
-            <span class="font-bold text-gray-200 block">${item.platform}</span>
-            <span class="text-[10px] text-gray-500">${item.timestamp}</span>
-          </div>
-          <span class="font-black text-brand-emerald">${item.score}/100</span>
-        `;
-        card.onclick = () => {
-          renderDashboardAnalytics(item.data);
-          document.getElementById('resultsWorkspace').classList.remove('hidden');
-          document.getElementById('emptyState').classList.add('hidden');
-          toggleHistoryDrawer();
-        };
-        list.appendChild(card);
+      // Uncapped Recommendations
+      const fixList = document.getElementById('frictionList');
+      fixList.innerHTML = '';
+      data.fixes.forEach(text => {
+        const row = document.createElement('div');
+        row.className = 'text-xs font-semibold text-gray-700 flex items-start space-x-2 bg-brand-cream p-2.5 rounded-xl border border-gray-100';
+        row.innerHTML = `<span class="text-brand-coral font-bold">•</span><span>${text}</span>`;
+        fixList.appendChild(row);
       });
+
+      // Headlines
+      const hlWrap = document.getElementById('headlinesContainer');
+      hlWrap.innerHTML = '';
+      data.headlines.forEach(text => {
+        const pill = document.createElement('div');
+        pill.className = 'px-3 py-1.5 bg-brand-cream rounded-xl text-xs font-bold border border-gray-200 cursor-pointer hover:border-brand-coral transition-all';
+        pill.innerText = text;
+        pill.onclick = () => { navigator.clipboard.writeText(text); showToast("Headline Copied!"); };
+        hlWrap.appendChild(pill);
+      });
+
+      // Caption Box
+      const bodyBox = document.getElementById('bodyCopyBox');
+      bodyBox.innerText = data.caption;
+      bodyBox.onclick = () => { navigator.clipboard.writeText(data.caption); showToast("Caption Copied!"); };
+
+      if (data.score >= 85 && window.confetti) {
+        confetti({ particleCount: 100, spread: 60, origin: { y: 0.7 }, colors: ['#FF4B91', '#FFB800', '#10B981'] });
+      }
     }
 
-    function clearHistory() {
-      auditHistory = [];
-      updateHistoryDrawer();
+    // PDF Generator Handler
+    exportPdfBtn.addEventListener('click', () => {
+      const element = document.getElementById('pdfReportContent');
+      const opt = {
+        margin:       0.3,
+        filename:     `Skeptic_AI_Audit_Report.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+      showToast("Generating PDF Report...");
+    });
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 2200);
     }
   </script>
 </body>
