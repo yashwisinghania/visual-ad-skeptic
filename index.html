@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Skeptic.ai - Creative Auditor & A/B Diagnostics</title>
+  <title>Skeptic.ai - Omnichannel Creative & Compliance Auditor</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -11,10 +11,12 @@
         extend: {
           colors: {
             brand: {
-              emerald: '#059669',
-              dark: '#0f172a',
-              coral: '#f43f5e',
-              yellow: '#eab308'
+              dark: '#0B0F17',
+              card: '#151C28',
+              accent: '#3B82F6',
+              emerald: '#10B981',
+              coral: '#F43F5E',
+              yellow: '#F59E0B'
             }
           }
         }
@@ -43,186 +45,163 @@
     }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+<body class="bg-brand-dark text-gray-100 font-sans min-h-screen flex flex-col">
 
   <!-- Header -->
-  <header class="bg-brand-dark text-white p-4 shadow-md flex justify-between items-center border-b border-gray-800">
+  <header class="bg-brand-card text-white p-4 shadow-md flex justify-between items-center border-b border-gray-800">
     <div class="flex items-center space-x-2">
       <span class="text-xl font-black tracking-tight text-brand-emerald">SKEPTIC.AI</span>
-      <span class="text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded-full font-mono border border-gray-700">v2.0 Advanced</span>
+      <span class="text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded-full font-mono border border-gray-700">v1.2</span>
     </div>
     <button onclick="toggleHistoryDrawer()" class="text-xs font-bold bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded-lg border border-gray-700 transition">
       📜 Audit History
     </button>
   </header>
 
-  <!-- Main Container -->
+  <!-- Main Workspace -->
   <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-    <!-- Left Column: Controls & Upload -->
-    <section class="lg:col-span-5 bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col space-y-4">
-      
-      <!-- Mode Switcher -->
-      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-        <h2 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Audit Setup</h2>
-        <div class="flex items-center bg-gray-100 p-1 rounded-lg text-xs font-bold">
-          <button id="modeSingleBtn" onclick="switchAuditMode('single')" class="px-2.5 py-1 rounded-md bg-white shadow-sm text-gray-800 transition">Single Asset</button>
-          <button id="modeABBtn" onclick="switchAuditMode('ab')" class="px-2.5 py-1 rounded-md text-gray-500 hover:text-gray-800 transition">🆚 A/B Test</button>
-        </div>
+    <!-- Left Panel: Input Form -->
+    <section class="lg:col-span-5 bg-brand-card p-5 rounded-2xl border border-gray-800 shadow-xl flex flex-col space-y-4">
+      <h2 class="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-800 pb-2">Audit Setup</h2>
+
+      <!-- Target Platform -->
+      <div>
+        <label class="block text-xs font-bold text-gray-400 mb-1">Target Platform</label>
+        <select id="platformSelect" class="w-full text-xs p-2.5 rounded-lg bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-brand-emerald" onchange="toggleSafeZone()">
+          <option value="Instagram & Meta">Instagram & Meta</option>
+          <option value="TikTok">TikTok</option>
+          <option value="Google Ads (Display/PMax)">Google Ads (Display/PMax)</option>
+          <option value="Pinterest">Pinterest</option>
+          <option value="LinkedIn">LinkedIn</option>
+        </select>
       </div>
 
-      <!-- Config Inputs -->
+      <!-- Format & Objective -->
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-bold text-gray-600 mb-1">Platform</label>
-          <select id="platformSelect" class="w-full text-xs p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-emerald bg-white" onchange="toggleSafeZone()">
-            <option value="Instagram & Meta">Instagram & Meta</option>
-            <option value="TikTok">TikTok</option>
-            <option value="Google Ads (Display/PMax)">Google Ads (Display/PMax)</option>
-            <option value="Pinterest">Pinterest</option>
-            <option value="LinkedIn">LinkedIn</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-600 mb-1">Content Format</label>
-          <select id="formatSelect" class="w-full text-xs p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-emerald bg-white" onchange="handleFormatChange()">
-            <option value="Static Graphic / Image">Static Image</option>
+          <label class="block text-xs font-bold text-gray-400 mb-1">Content Format</label>
+          <select id="formatSelect" class="w-full text-xs p-2.5 rounded-lg bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-brand-emerald" onchange="handleFormatChange()">
+            <option value="Static Graphic / Image">Static Graphic</option>
             <option value="Carousel Deck">Carousel Deck</option>
             <option value="Written Copy Only">Written Copy Only</option>
           </select>
         </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-400 mb-1">Post Objective</label>
+          <select id="purposeSelect" class="w-full text-xs p-2.5 rounded-lg bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-brand-emerald">
+            <option value="🛒 Product Showcase / Catalog">🛒 Product Showcase / Catalog</option>
+            <option value="🎯 Direct Response Conversion">🎯 Direct Response Conversion</option>
+            <option value="🚀 Brand Awareness & Engagement">🚀 Brand Awareness</option>
+            <option value="📢 Lead Generation">📢 Lead Generation</option>
+          </select>
+        </div>
       </div>
 
+      <!-- Target Persona / Niche Input -->
       <div>
-        <label class="block text-xs font-bold text-gray-600 mb-1">Campaign Objective</label>
-        <select id="purposeSelect" class="w-full text-xs p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-emerald bg-white">
-          <option value="🛒 Product Showcase / Catalog">🛒 Product Showcase / Catalog</option>
-          <option value="🎯 Direct Response Conversion">🎯 Direct Response Conversion</option>
-          <option value="🚀 Brand Awareness & Engagement">🚀 Brand Awareness & Engagement</option>
-          <option value="📢 Lead Generation">📢 Lead Generation</option>
-        </select>
-      </div>
-
-      <!-- Target Demographic Input -->
-      <div>
-        <label class="block text-xs font-bold text-gray-600 mb-1">Target Persona / Niche</label>
+        <label class="block text-xs font-bold text-gray-400 mb-1">Target Persona / Niche (Optional)</label>
         <input 
           type="text" 
           id="audienceInput" 
           placeholder="e.g., Gen Z Skincare, B2B SaaS Founders, Busy Moms" 
-          class="w-full text-xs p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-emerald"
+          class="w-full text-xs p-2.5 rounded-lg bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-brand-emerald placeholder-gray-500"
         />
       </div>
 
-      <!-- Dropzone Section -->
-      <div id="mediaUploadContainer" class="space-y-3">
-        <!-- Asset A Dropzone -->
-        <div id="dropZoneA" class="border-2 border-dashed border-gray-200 hover:border-brand-emerald rounded-xl p-4 text-center cursor-pointer transition bg-gray-50 relative">
-          <input type="file" id="fileInputA" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'A')">
-          <div id="dropZoneContentA" class="space-y-1">
-            <span class="text-xl">📁</span>
-            <p class="text-xs font-bold text-gray-600" id="labelDropA">Upload Creative Asset (Option A)</p>
-            <p class="text-[10px] text-gray-400">PNG, JPG, WebP up to 10MB</p>
-          </div>
-        </div>
-
-        <!-- Asset B Dropzone (Hidden in Single Mode) -->
-        <div id="dropZoneB" class="border-2 border-dashed border-gray-200 hover:border-brand-emerald rounded-xl p-4 text-center cursor-pointer transition bg-gray-50 relative hidden">
-          <input type="file" id="fileInputB" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'B')">
-          <div id="dropZoneContentB" class="space-y-1">
-            <span class="text-xl">🆚</span>
-            <p class="text-xs font-bold text-gray-600">Upload Comparison Asset (Option B)</p>
-            <p class="text-[10px] text-gray-400">PNG, JPG, WebP up to 10MB</p>
+      <!-- Media Upload Zone -->
+      <div id="mediaUploadContainer">
+        <label class="block text-xs font-bold text-gray-400 mb-1">Upload Creative</label>
+        <div id="dropZone" class="border-2 border-dashed border-gray-700 hover:border-brand-emerald rounded-xl p-6 text-center cursor-pointer transition bg-gray-900/50">
+          <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+          <div class="space-y-1">
+            <span class="text-2xl">📁</span>
+            <p class="text-xs font-bold text-gray-300" id="dropLabel">Drag & Drop or Click to Upload</p>
+            <p class="text-[10px] text-gray-500">PNG, JPG, WebP up to 10MB</p>
           </div>
         </div>
       </div>
 
-      <!-- Text Copy Input (Shown for Written Copy Only) -->
+      <!-- Copy Input (Shown for Written Copy Only) -->
       <div id="textInputWrapper" class="hidden">
-        <label class="block text-xs font-bold text-gray-600 mb-1">Ad Copy / Script Text</label>
-        <textarea id="textCopyInput" rows="4" placeholder="Paste your primary ad text, headline, or script here..." class="w-full text-xs p-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-emerald resize-none"></textarea>
+        <label class="block text-xs font-bold text-gray-400 mb-1">Ad Copy / Script Text</label>
+        <textarea id="textCopyInput" rows="4" placeholder="Paste your primary ad copy or caption script here..." class="w-full text-xs p-2.5 rounded-lg bg-gray-900 border border-gray-700 text-gray-200 focus:outline-none focus:border-brand-emerald resize-none"></textarea>
       </div>
 
-      <!-- Action Button -->
-      <button onclick="runAudit()" id="submitBtn" class="w-full py-3 bg-brand-emerald hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md transition flex items-center justify-center space-x-2">
-        <span>🔍 Run Diagnostic Audit</span>
+      <!-- Run Button -->
+      <button onclick="runAudit()" id="submitBtn" class="w-full py-3 bg-brand-emerald hover:bg-emerald-600 text-gray-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition flex items-center justify-center space-x-2">
+        <span>🔍 Run Omnichannel Audit</span>
       </button>
-
     </section>
 
-    <!-- Right Column: Results & Analytics -->
-    <section class="lg:col-span-7 bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+    <!-- Right Panel: Results & Diagnostics -->
+    <section class="lg:col-span-7 bg-brand-card p-5 rounded-2xl border border-gray-800 shadow-xl flex flex-col justify-between">
       
-      <!-- Safe Zone Preview Overlay Controls & Preview Area -->
-      <div id="previewCard" class="hidden border-b border-gray-100 pb-4 mb-4">
+      <!-- Preview Card with Safe Zone Toggle -->
+      <div id="previewCard" class="hidden border-b border-gray-800 pb-4 mb-4">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold text-gray-500">Asset Preview</span>
-          
-          <!-- Safe-Zone Switch -->
+          <span class="text-xs font-bold text-gray-400">Creative Preview</span>
           <div class="flex items-center space-x-2">
-            <span class="text-[11px] font-bold text-gray-500">Platform Safe-Zone Grid</span>
+            <span class="text-[11px] font-bold text-gray-400">Platform Safe-Zone Grid</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" id="safeZoneToggle" class="sr-only peer" onchange="toggleSafeZone()">
-              <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-emerald"></div>
+              <div class="w-8 h-4 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-emerald"></div>
             </label>
           </div>
         </div>
-
-        <!-- Preview Image Container -->
-        <div class="relative overflow-hidden rounded-lg bg-gray-900 flex justify-center max-h-64">
-          <img id="imagePreviewA" class="max-h-64 object-contain rounded-lg hidden" alt="Option A Preview" />
-          <img id="imagePreviewB" class="max-h-64 object-contain rounded-lg hidden border-l-2 border-brand-emerald" alt="Option B Preview" />
+        <div class="relative overflow-hidden rounded-lg bg-gray-950 flex justify-center max-h-64 border border-gray-800">
+          <img id="imagePreview" class="max-h-64 object-contain rounded-lg hidden" alt="Uploaded Preview" />
           <div id="safeZoneOverlay" class="safe-zone-overlay hidden"></div>
         </div>
       </div>
 
-      <!-- Workspace Container -->
+      <!-- Results Workspace -->
       <div id="resultsWorkspace" class="hidden flex-1 flex flex-col justify-between space-y-4">
         <div>
-          <!-- Overall Score & Header -->
-          <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
+          <!-- Overall Header -->
+          <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-3">
             <div>
-              <h3 class="text-base font-black text-gray-800" id="resultHeader">Audit Analysis</h3>
-              <p class="text-xs text-gray-400" id="resultSubheader">Policy & Performance Diagnostic</p>
+              <h3 class="text-base font-black text-gray-100">Audit Diagnostic</h3>
+              <p class="text-xs text-gray-400">Compliance & Performance Evaluation</p>
             </div>
             <div class="text-right">
-              <span class="text-2xl font-black text-brand-emerald" id="overallScore">--</span>
-              <span class="text-xs text-gray-400 block font-medium">Overall Score</span>
+              <span class="text-3xl font-black text-brand-emerald" id="overallScore">--</span>
+              <span class="text-[10px] text-gray-400 block font-medium uppercase">Overall Score</span>
             </div>
           </div>
 
-          <!-- Parameter Ratings Breakdown -->
+          <!-- Parameter Itemized Ratings -->
           <div id="parameterBreakdown" class="space-y-1 my-3"></div>
 
-          <!-- Analysis Feedback Block -->
-          <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-100 text-xs text-gray-700 leading-relaxed space-y-2 mt-3" id="analysisContent">
+          <!-- Diagnostic Feedback -->
+          <div class="bg-gray-900/60 p-4 rounded-xl border border-gray-800 text-xs text-gray-300 leading-relaxed space-y-2 mt-3" id="analysisContent">
           </div>
         </div>
 
-        <!-- Prompt Generator Card -->
-        <div class="mt-4 p-3 rounded-xl border border-gray-100 bg-emerald-50/50 flex flex-col space-y-2">
+        <!-- AI Redesign Prompt Helper -->
+        <div class="mt-4 p-3 rounded-xl border border-gray-800 bg-gray-900/40 flex flex-col space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-gray-700">🎨 Redesign AI Prompt Helper</span>
-            <button onclick="generateFixPrompt()" class="text-[11px] font-bold bg-brand-emerald text-white px-2.5 py-1 rounded-md hover:opacity-90 transition">
+            <span class="text-xs font-bold text-gray-400">🎨 Redesign Helper</span>
+            <button onclick="generateFixPrompt()" class="text-[11px] font-bold bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 px-2.5 py-1 rounded-md transition">
               Generate AI Image Prompt
             </button>
           </div>
-          <div id="aiPromptOutput" class="hidden p-2.5 bg-white rounded-lg border border-emerald-100 text-[11px] text-gray-700 font-mono select-all break-words"></div>
+          <div id="aiPromptOutput" class="hidden p-2.5 bg-gray-950 rounded-lg border border-gray-800 text-[11px] text-brand-emerald font-mono select-all break-words"></div>
         </div>
       </div>
 
       <!-- Empty State -->
-      <div id="emptyState" class="flex-1 flex flex-col items-center justify-center text-center p-8 text-gray-400 space-y-2">
+      <div id="emptyState" class="flex-1 flex flex-col items-center justify-center text-center p-8 text-gray-500 space-y-2">
         <span class="text-4xl">⚡</span>
-        <p class="text-xs font-bold text-gray-600">No Active Audit</p>
-        <p class="text-[11px]">Upload creative assets or script copy on the left to begin instant AI diagnostics.</p>
+        <p class="text-xs font-bold text-gray-300">No Active Audit</p>
+        <p class="text-[11px] max-w-xs">Upload a creative image or copy on the left to run an automated AI diagnostic.</p>
       </div>
 
       <!-- Loading State -->
       <div id="loadingState" class="hidden flex-1 flex flex-col items-center justify-center text-center p-8 space-y-3">
         <div class="w-8 h-8 border-4 border-brand-emerald border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-xs font-bold text-gray-700">Analyzing Creative Elements...</p>
-        <p class="text-[10px] text-gray-400">Evaluating platform compliance, hook strength, and visual hierarchy</p>
+        <p class="text-xs font-bold text-gray-200">Evaluating Visual & Copy Assets...</p>
+        <p class="text-[10px] text-gray-500">Checking policy guidelines, hook strength, and design hierarchy</p>
       </div>
 
     </section>
@@ -230,66 +209,40 @@
   </main>
 
   <!-- History Drawer -->
-  <div id="historyDrawer" class="fixed inset-y-0 right-0 w-80 bg-white shadow-2xl border-l border-gray-200 p-5 transform translate-x-full transition-transform duration-300 z-50 flex flex-col justify-between">
+  <div id="historyDrawer" class="fixed inset-y-0 right-0 w-80 bg-brand-card shadow-2xl border-l border-gray-800 p-5 transform translate-x-full transition-transform duration-300 z-50 flex flex-col justify-between">
     <div>
-      <div class="flex justify-between items-center border-b border-gray-100 pb-3 mb-3">
-        <h3 class="text-sm font-bold text-gray-800">Audit History</h3>
-        <button onclick="toggleHistoryDrawer()" class="text-xs text-gray-400 hover:text-gray-600 font-bold">✕</button>
+      <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-3">
+        <h3 class="text-sm font-bold text-gray-200">Audit History</h3>
+        <button onclick="toggleHistoryDrawer()" class="text-xs text-gray-400 hover:text-gray-200 font-bold">✕</button>
       </div>
       <div id="historyList" class="space-y-2 max-h-[75vh] overflow-y-auto"></div>
     </div>
-    <button onclick="clearHistory()" class="w-full text-center text-xs text-brand-coral hover:underline font-bold py-2 border-t border-gray-100">
+    <button onclick="clearHistory()" class="w-full text-center text-xs text-brand-coral hover:underline font-bold py-2 border-t border-gray-800">
       Clear Audit History
     </button>
   </div>
 
-  <!-- JavaScript Logic -->
   <script>
-    let currentAuditMode = 'single';
-    let assetA = null;
-    let assetB = null;
+    let activeAsset = null;
     let auditHistory = [];
-    let lastParsedResult = null;
 
-    // Attach Dropzone Events
-    document.getElementById('dropZoneA').onclick = () => document.getElementById('fileInputA').click();
-    document.getElementById('dropZoneB').onclick = () => document.getElementById('fileInputB').click();
-
-    function switchAuditMode(mode) {
-      currentAuditMode = mode;
-      const btnSingle = document.getElementById('modeSingleBtn');
-      const btnAB = document.getElementById('modeABBtn');
-      const dropZoneB = document.getElementById('dropZoneB');
-      const labelDropA = document.getElementById('labelDropA');
-
-      if (mode === 'ab') {
-        btnAB.className = 'px-2.5 py-1 rounded-md bg-white shadow-sm text-gray-800 transition';
-        btnSingle.className = 'px-2.5 py-1 rounded-md text-gray-500 hover:text-gray-800 transition';
-        dropZoneB.classList.remove('hidden');
-        labelDropA.innerText = 'Upload Creative Asset (Option A)';
-      } else {
-        btnSingle.className = 'px-2.5 py-1 rounded-md bg-white shadow-sm text-gray-800 transition';
-        btnAB.className = 'px-2.5 py-1 rounded-md text-gray-500 hover:text-gray-800 transition';
-        dropZoneB.classList.add('hidden');
-        labelDropA.innerText = 'Upload Creative Asset';
-      }
-    }
+    document.getElementById('dropZone').onclick = () => document.getElementById('fileInput').click();
 
     function handleFormatChange() {
       const format = document.getElementById('formatSelect').value;
-      const uploadContainer = document.getElementById('mediaUploadContainer');
+      const mediaContainer = document.getElementById('mediaUploadContainer');
       const textWrapper = document.getElementById('textInputWrapper');
 
       if (format === 'Written Copy Only') {
-        uploadContainer.classList.add('hidden');
+        mediaContainer.classList.add('hidden');
         textWrapper.classList.remove('hidden');
       } else {
-        uploadContainer.classList.remove('hidden');
+        mediaContainer.classList.remove('hidden');
         textWrapper.classList.add('hidden');
       }
     }
 
-    function handleFileSelect(event, target) {
+    function handleFileSelect(event) {
       const file = event.target.files[0];
       if (!file) return;
 
@@ -298,17 +251,12 @@
         const dataUrl = e.target.result;
         const base64Data = dataUrl.split(',')[1];
         
-        if (target === 'A') {
-          assetA = { mimeType: file.type, base64: base64Data, dataUrl: dataUrl };
-          document.getElementById('labelDropA').innerText = `Loaded: ${file.name}`;
-          document.getElementById('imagePreviewA').src = dataUrl;
-          document.getElementById('imagePreviewA').classList.remove('hidden');
-        } else {
-          assetB = { mimeType: file.type, base64: base64Data, dataUrl: dataUrl };
-          document.getElementById('dropZoneContentB').querySelector('p').innerText = `Loaded: ${file.name}`;
-          document.getElementById('imagePreviewB').src = dataUrl;
-          document.getElementById('imagePreviewB').classList.remove('hidden');
-        }
+        activeAsset = { mimeType: file.type, base64: base64Data, dataUrl: dataUrl };
+        document.getElementById('dropLabel').innerText = `Loaded: ${file.name}`;
+        
+        const previewImg = document.getElementById('imagePreview');
+        previewImg.src = dataUrl;
+        previewImg.classList.remove('hidden');
         document.getElementById('previewCard').classList.remove('hidden');
       };
       reader.readAsDataURL(file);
@@ -335,62 +283,30 @@
       const platform = document.getElementById('platformSelect').value;
       const format = document.getElementById('formatSelect').value;
       const purpose = document.getElementById('purposeSelect').value;
-      const audience = document.getElementById('audienceInput').value.trim() || 'General Consumers';
+      const audience = document.getElementById('audienceInput').value.trim() || 'General Target Audience';
 
-      if (format !== 'Written Copy Only' && !assetA) {
-        alert('Please upload at least one creative asset (Option A) to proceed.');
+      if (format !== 'Written Copy Only' && !activeAsset) {
+        alert('Please upload a creative asset first.');
         return;
       }
 
-      // UI State Transition
       document.getElementById('emptyState').classList.add('hidden');
       document.getElementById('resultsWorkspace').classList.add('hidden');
       document.getElementById('loadingState').classList.remove('hidden');
 
-      let promptText = "";
-      if (currentAuditMode === 'ab') {
-        promptText = `Perform an A/B COMPARISON DIAGNOSTIC between Option A and Option B creative assets for ${platform} aiming for "${purpose}". Target Demographic: ${audience}. 
-Compare visual hierarchy, stopping power, hook strength, and platform policy compliance. Declare a winner explicitly and provide itemized scores on a 0-100 scale.`;
-      } else {
-        promptText = `Analyze this ${format} designed for ${platform} aiming for "${purpose}".
+      const promptText = `Analyze this ${format} designed for ${platform} aiming for "${purpose}". 
 TARGET DEMOGRAPHIC: ${audience}.
 Perform a dual diagnostic:
-1. COMPLIANCE & POLICY CHECK: Verify platform compliance and audience appropriateness.
-2. PERFORMANCE & CREATIVE EVALUATION: Evaluate visual hierarchy, hook strength, typography contrast, and messaging clarity.
-IMPORTANT: Return ALL itemized ratings on a 0-100 scale (not 1-10).
-Provide clear, actionable agency-level feedback.`;
-      }
-
-      // Dynamic JSON Schema Construction
-      const schemaProperties = {
-        score: { type: "NUMBER", description: "Overall rating out of 100" },
-        winner: { type: "STRING", description: "Option A, Option B, or N/A" },
-        parameters: {
-          type: "ARRAY",
-          items: {
-            type: "OBJECT",
-            properties: {
-              name: { type: "STRING" },
-              rating: { type: "NUMBER", description: "Rating score scaled 0 to 100" },
-              status: { type: "STRING", description: "Pass, Warning, or Critical" }
-            },
-            required: ["name", "rating", "status"]
-          }
-        },
-        policyIssues: { type: "ARRAY", items: { type: "STRING" } },
-        creativeFixes: { type: "ARRAY", items: { type: "STRING" } },
-        summary: { type: "STRING" }
-      };
+1. COMPLIANCE & POLICY CHECK: Verify strict platform compliance and suitability for ${audience}.
+2. PERFORMANCE & CREATIVE EVALUATION: Evaluate visual hierarchy, messaging clarity, hook strength, and platform alignment.
+IMPORTANT: Return ALL scores and parameter ratings on a 0-100 scale (not 1-10).
+Provide actionable agency-level feedback without truncating recommendations.`;
 
       const contentsParts = [{ text: promptText }];
-      if (format !== 'Written Copy Only' && assetA) {
-        contentsParts.push({ inlineData: { mimeType: assetA.mimeType, data: assetA.base64 } });
-      }
-      if (currentAuditMode === 'ab' && assetB) {
-        contentsParts.push({ inlineData: { mimeType: assetB.mimeType, data: assetB.base64 } });
-      }
-      if (format === 'Written Copy Only') {
-        contentsParts.push({ text: `Ad Script Text: "${document.getElementById('textCopyInput').value}"` });
+      if (format !== 'Written Copy Only' && activeAsset) {
+        contentsParts.push({ inlineData: { mimeType: activeAsset.mimeType, data: activeAsset.base64 } });
+      } else {
+        contentsParts.push({ text: `Ad Copy Script: "${document.getElementById('textCopyInput').value}"` });
       }
 
       try {
@@ -403,7 +319,24 @@ Provide clear, actionable agency-level feedback.`;
               responseMimeType: "application/json",
               responseSchema: {
                 type: "OBJECT",
-                properties: schemaProperties,
+                properties: {
+                  score: { type: "NUMBER" },
+                  parameters: {
+                    type: "ARRAY",
+                    items: {
+                      type: "OBJECT",
+                      properties: {
+                        name: { type: "STRING" },
+                        rating: { type: "NUMBER" },
+                        status: { type: "STRING" }
+                      },
+                      required: ["name", "rating", "status"]
+                    }
+                  },
+                  policyIssues: { type: "ARRAY", items: { type: "STRING" } },
+                  creativeFixes: { type: "ARRAY", items: { type: "STRING" } },
+                  summary: { type: "STRING" }
+                },
                 required: ["score", "parameters", "policyIssues", "creativeFixes", "summary"]
               }
             }
@@ -413,10 +346,8 @@ Provide clear, actionable agency-level feedback.`;
         const jsonResult = await response.json();
         const parsedData = JSON.parse(jsonResult.candidates[0].content.parts[0].text);
         
-        lastParsedResult = parsedData;
         renderDashboardAnalytics(parsedData);
 
-        // Store History Lightweight
         auditHistory.push({
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           platform: platform,
@@ -426,7 +357,7 @@ Provide clear, actionable agency-level feedback.`;
         updateHistoryDrawer();
 
       } catch (err) {
-        alert("An error occurred while generating the audit. Please check your network or inputs.");
+        alert("An error occurred during evaluation. Please try again.");
         console.error(err);
       } finally {
         document.getElementById('loadingState').classList.add('hidden');
@@ -436,39 +367,33 @@ Provide clear, actionable agency-level feedback.`;
 
     function renderDashboardAnalytics(data) {
       document.getElementById('overallScore').innerText = `${data.score}/100`;
-      
-      if (data.winner && data.winner !== 'N/A') {
-        document.getElementById('resultHeader').innerText = `Winner: ${data.winner}`;
-      } else {
-        document.getElementById('resultHeader').innerText = 'Audit Analysis';
-      }
 
-      // Itemized Parameters Breakdown (Auto-normalizes 1-10 scores to 100)
+      // Auto-scaling 1-10 scores up to 100 for parameter breakdown
       const paramContainer = document.getElementById('parameterBreakdown');
       paramContainer.innerHTML = '';
       data.parameters.forEach(param => {
         let normalizedRating = param.rating <= 10 ? param.rating * 10 : param.rating;
+
         const row = document.createElement('div');
-        row.className = 'flex items-center justify-between text-xs py-1 border-b border-gray-50';
+        row.className = 'flex items-center justify-between text-xs py-1.5 border-b border-gray-800';
         let colorClass = normalizedRating >= 80 ? 'text-brand-emerald' : (normalizedRating >= 60 ? 'text-brand-yellow' : 'text-brand-coral');
         row.innerHTML = `
-          <span class="font-bold text-gray-600">${param.name}</span>
+          <span class="font-bold text-gray-300">${param.name}</span>
           <div class="flex items-center space-x-2">
             <span class="font-black ${colorClass}">${normalizedRating}/100</span>
-            <span class="text-gray-400 font-medium">(${param.status})</span>
+            <span class="text-gray-500 font-medium">(${param.status})</span>
           </div>
         `;
         paramContainer.appendChild(row);
       });
 
-      // Feedback Text Block
       const analysisContent = document.getElementById('analysisContent');
       analysisContent.innerHTML = `
-        <p><strong>Summary:</strong> ${data.summary}</p>
+        <p><strong class="text-gray-100">Summary:</strong> ${data.summary}</p>
         ${data.policyIssues.length ? `<p class="text-brand-coral font-bold">⚠️ Policy Notes: ${data.policyIssues.join(', ')}</p>` : ''}
         <div>
-          <strong>Key Creative Fixes:</strong>
-          <ul class="list-disc list-inside mt-1 space-y-0.5">
+          <strong class="text-gray-100">Key Fixes & Recommendations:</strong>
+          <ul class="list-disc list-inside mt-1 space-y-0.5 text-gray-300">
             ${data.creativeFixes.map(fix => `<li>${fix}</li>`).join('')}
           </ul>
         </div>
@@ -481,7 +406,7 @@ Provide clear, actionable agency-level feedback.`;
       const audience = document.getElementById('audienceInput').value.trim() || 'target audience';
       const output = document.getElementById('aiPromptOutput');
 
-      const generatedPrompt = `High-converting advertisement creative for ${platform}, objective: ${purpose}, target audience: ${audience}. Clean composition, high visual contrast, clear focal point, professional lighting, optimized CTR hierarchy, 8k resolution --ar 4:5 --v 6.0`;
+      const generatedPrompt = `High-converting ad creative for ${platform}, objective: ${purpose}, targeting: ${audience}. Clean visual composition, high contrast, studio lighting, bold visual hook, optimized for high CTR --ar 4:5 --v 6.0`;
 
       output.innerText = generatedPrompt;
       output.classList.remove('hidden');
@@ -494,13 +419,13 @@ Provide clear, actionable agency-level feedback.`;
     function updateHistoryDrawer() {
       const list = document.getElementById('historyList');
       list.innerHTML = '';
-      auditHistory.forEach((item, index) => {
+      auditHistory.forEach((item) => {
         const card = document.createElement('div');
-        card.className = 'p-2.5 bg-gray-50 rounded-lg border border-gray-100 text-xs hover:bg-gray-100 cursor-pointer transition flex justify-between items-center';
+        card.className = 'p-2.5 bg-gray-900 rounded-lg border border-gray-800 text-xs hover:border-gray-700 cursor-pointer transition flex justify-between items-center';
         card.innerHTML = `
           <div>
-            <span class="font-bold text-gray-700 block">${item.platform}</span>
-            <span class="text-[10px] text-gray-400">${item.timestamp}</span>
+            <span class="font-bold text-gray-200 block">${item.platform}</span>
+            <span class="text-[10px] text-gray-500">${item.timestamp}</span>
           </div>
           <span class="font-black text-brand-emerald">${item.score}/100</span>
         `;
