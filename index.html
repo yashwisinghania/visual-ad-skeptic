@@ -524,17 +524,20 @@
       document.getElementById('clutterValue').innerText = data.friction;
       document.getElementById('verdictText').innerText = data.verdict;
 
-      // Itemized Parameters Breakdown
+// Itemized Parameters Breakdown (Auto-normalized to 100)
       const paramContainer = document.getElementById('parameterBreakdown');
       paramContainer.innerHTML = '';
       data.parameters.forEach(param => {
+        // Automatically scale 1-10 ratings up to 100
+        let normalizedRating = param.rating <= 10 ? param.rating * 10 : param.rating;
+
         const row = document.createElement('div');
         row.className = 'flex items-center justify-between text-xs py-1 border-b border-gray-50';
-        let colorClass = param.rating >= 80 ? 'text-brand-emerald' : (param.rating >= 60 ? 'text-brand-yellow' : 'text-brand-coral');
+        let colorClass = normalizedRating >= 80 ? 'text-brand-emerald' : (normalizedRating >= 60 ? 'text-brand-yellow' : 'text-brand-coral');
         row.innerHTML = `
           <span class="font-bold text-gray-600">${param.name}</span>
           <div class="flex items-center space-x-2">
-            <span class="font-black ${colorClass}">${param.rating}/100</span>
+            <span class="font-black ${colorClass}">${normalizedRating}/100</span>
             <span class="text-gray-400 font-medium">(${param.status})</span>
           </div>
         `;
