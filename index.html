@@ -234,6 +234,44 @@
           </div>
         </div>
 
+        <!-- FEATURE: Re-Imagine My Creative AI Prompt Generator -->
+        <div id="reimagineContainer" class="hidden bg-white p-8 rounded-3xl shadow-soft border border-rose-100 transition-all">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            <div>
+              <span class="text-xs font-extrabold uppercase tracking-wider text-brand-coral bg-rose-50 px-3 py-1 rounded-full border border-rose-100">AI Creative Fix</span>
+              <h3 class="text-lg font-black text-brand-dark mt-1">✨ Re-Imagine My Creative</h3>
+              <p class="text-xs text-gray-400">Low stopping power detected. Generate visual fix blueprints & optimized AI generation prompts based on audit findings.</p>
+            </div>
+            <button id="generatePromptBtn" class="bg-brand-coral text-white font-extrabold px-5 py-3 rounded-xl shadow-lg shadow-brand-coral/30 hover:scale-[1.02] active:scale-95 transition-all text-xs flex items-center gap-2 whitespace-nowrap">
+              <span>Generate Image Prompt for Fix</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </button>
+          </div>
+
+          <!-- Generated Prompts Output Container -->
+          <div id="reimagineOutput" class="hidden space-y-4 mt-6 pt-6 border-t border-gray-100">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-gray-400">Midjourney / DALL-E AI Image Prompt</span>
+                <button id="copyMidjourneyBtn" class="text-xs font-bold text-brand-coral hover:underline">📋 Copy Prompt</button>
+              </div>
+              <div id="midjourneyPromptBox" class="p-4 rounded-2xl bg-brand-cream border border-gray-200 font-mono text-xs text-brand-dark leading-relaxed cursor-pointer hover:border-brand-coral transition-all">
+                Prompt will appear here...
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-gray-400">Canva / Figma Redesign Blueprint</span>
+                <button id="copyCanvaBtn" class="text-xs font-bold text-brand-coral hover:underline">📋 Copy Blueprint</button>
+              </div>
+              <div id="canvaBlueprintBox" class="p-4 rounded-2xl bg-brand-cream border border-gray-200 text-xs text-brand-dark leading-relaxed cursor-pointer hover:border-brand-coral transition-all">
+                Blueprint will appear here...
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Copywriting Suite -->
         <div class="bg-white p-8 rounded-3xl shadow-soft border border-gray-100">
           <h3 class="text-base font-extrabold text-brand-dark mb-1">✍️ Native Copy & Hook Suite</h3>
@@ -266,6 +304,7 @@
     let assetQueue = [];
     let activeAssetIndex = 0;
     let auditHistory = JSON.parse(localStorage.getItem('skeptic_audit_history') || '[]');
+    let currentAuditResult = null;
 
     // DOM Elements
     const userApiKeyInput = document.getElementById('userApiKey');
@@ -287,12 +326,45 @@
     const exportPdfBtn = document.getElementById('exportPdfBtn');
     const clearAssetContainer = document.getElementById('clearAssetContainer');
     const clearAssetBtn = document.getElementById('clearAssetBtn');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+
+    // Feature DOM Elements
+    const reimagineContainer = document.getElementById('reimagineContainer');
+    const generatePromptBtn = document.getElementById('generatePromptBtn');
+    const reimagineOutput = document.getElementById('reimagineOutput');
+    const midjourneyPromptBox = document.getElementById('midjourneyPromptBox');
+    const canvaBlueprintBox = document.getElementById('canvaBlueprintBox');
+    const copyMidjourneyBtn = document.getElementById('copyMidjourneyBtn');
+    const copyCanvaBtn = document.getElementById('copyCanvaBtn');
 
     // Drawer Elements
     const openHistoryBtn = document.getElementById('openHistoryBtn');
     const closeHistoryBtn = document.getElementById('closeHistoryBtn');
     const historyDrawer = document.getElementById('historyDrawer');
     const historyList = document.getElementById('historyList');
+
+    // Helper: Toast Notification
+    function showToast(message) {
+      toastMessage.innerText = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    // Export PDF Feature
+    exportPdfBtn.addEventListener('click', () => {
+      const element = document.getElementById('pdfReportContent');
+      const opt = {
+        margin:       0.3,
+        filename:     `Skeptic_AI_Audit_${platformSelect.value.replace(/[^a-z0-9]/gi, '_')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    });
 
     // Persist API Key
     if (localStorage.getItem('skeptic_gemini_key')) {
@@ -340,6 +412,8 @@
       batchContainer.classList.add('hidden');
       resultsWorkspace.classList.add('hidden');
       clearAssetContainer.classList.add('hidden');
+      reimagineContainer.classList.add('hidden');
+      reimagineOutput.classList.add('hidden');
       showToast("Cleared uploaded asset(s)");
     };
 
@@ -479,7 +553,7 @@
           parts.push({ text: `User Content Copy: "${textCopyInput.value}"` });
         }
 
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -495,8 +569,14 @@
         if (json.error) throw new Error(json.error.message);
 
         const parsedResult = JSON.parse(json.candidates[0].content.parts[0].text);
+        currentAuditResult = parsedResult;
         
         renderDashboardAnalytics(parsedResult);
+
+        // Trigger confetti on high stopping power score
+        if (parsedResult.score >= 80) {
+          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        }
 
         // Store in local history
         auditHistory.push({
@@ -518,83 +598,159 @@
     }
 
     function renderDashboardAnalytics(data) {
+      currentAuditResult = data;
       document.getElementById('scoreValue').innerText = data.score;
       document.getElementById('scoreBar').style.width = `${data.score}%`;
       document.getElementById('ctrValue').innerText = data.ctr;
       document.getElementById('clutterValue').innerText = data.friction;
       document.getElementById('verdictText').innerText = data.verdict;
 
-// Itemized Parameters Breakdown (Auto-normalized to 100)
+      // Itemized Parameters Breakdown
       const paramContainer = document.getElementById('parameterBreakdown');
       paramContainer.innerHTML = '';
       data.parameters.forEach(param => {
-        // Automatically scale 1-10 ratings up to 100
         let normalizedRating = param.rating <= 10 ? param.rating * 10 : param.rating;
 
         const row = document.createElement('div');
-        row.className = 'flex items-center justify-between text-xs py-1 border-b border-gray-50';
-        let colorClass = normalizedRating >= 80 ? 'text-brand-emerald' : (normalizedRating >= 60 ? 'text-brand-yellow' : 'text-brand-coral');
+        row.className = 'flex items-center justify-between text-xs py-1 border-b border-gray-100 last:border-0';
         row.innerHTML = `
           <span class="font-bold text-gray-600">${param.name}</span>
           <div class="flex items-center space-x-2">
-            <span class="font-black ${colorClass}">${normalizedRating}/100</span>
-            <span class="text-gray-400 font-medium">(${param.status})</span>
+            <span class="font-black text-brand-dark">${normalizedRating}/100</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${param.status.toLowerCase().includes('good') || param.status.toLowerCase().includes('high') ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${param.status}</span>
           </div>
         `;
         paramContainer.appendChild(row);
       });
 
-      // Uncapped Recommendations
-      const fixList = document.getElementById('frictionList');
-      fixList.innerHTML = '';
-      data.fixes.forEach(text => {
-        const row = document.createElement('div');
-        row.className = 'text-xs font-semibold text-gray-700 flex items-start space-x-2 bg-brand-cream p-2.5 rounded-xl border border-gray-100';
-        row.innerHTML = `<span class="text-brand-coral font-bold">•</span><span>${text}</span>`;
-        fixList.appendChild(row);
+      // Fixes / Friction List
+      const frictionList = document.getElementById('frictionList');
+      frictionList.innerHTML = '';
+      data.fixes.forEach(fix => {
+        const item = document.createElement('div');
+        item.className = 'flex items-start space-x-3 p-3 bg-rose-50/50 rounded-2xl border border-rose-100/60 text-xs font-medium text-brand-dark';
+        item.innerHTML = `
+          <span class="text-brand-coral font-bold mt-0.5">⚠️</span>
+          <span>${fix}</span>
+        `;
+        frictionList.appendChild(item);
       });
 
       // Headlines
-      const hlWrap = document.getElementById('headlinesContainer');
-      hlWrap.innerHTML = '';
-      data.headlines.forEach(text => {
-        const pill = document.createElement('div');
-        pill.className = 'px-3 py-1.5 bg-brand-cream rounded-xl text-xs font-bold border border-gray-200 cursor-pointer hover:border-brand-coral transition-all';
-        pill.innerText = text;
-        pill.onclick = () => { navigator.clipboard.writeText(text); showToast("Headline Copied!"); };
-        hlWrap.appendChild(pill);
+      const headlinesContainer = document.getElementById('headlinesContainer');
+      headlinesContainer.innerHTML = '';
+      data.headlines.forEach(hl => {
+        const badge = document.createElement('div');
+        badge.className = 'bg-brand-cream border border-gray-200 hover:border-brand-coral p-3 rounded-2xl text-xs font-bold text-brand-dark cursor-pointer transition-all shadow-sm flex items-center space-x-2';
+        badge.innerHTML = `<span>"${hl}"</span> <span class="text-gray-400 text-[10px]">📋</span>`;
+        badge.onclick = () => {
+          navigator.clipboard.writeText(hl);
+          showToast(`Copied headline: "${hl}"`);
+        };
+        headlinesContainer.appendChild(badge);
       });
 
-      // Caption Box
-      const bodyBox = document.getElementById('bodyCopyBox');
-      bodyBox.innerText = data.caption;
-      bodyBox.onclick = () => { navigator.clipboard.writeText(data.caption); showToast("Caption Copied!"); };
+      // Caption
+      const bodyCopyBox = document.getElementById('bodyCopyBox');
+      bodyCopyBox.innerText = data.caption;
+      bodyCopyBox.onclick = () => {
+        navigator.clipboard.writeText(data.caption);
+        showToast("Copied caption to clipboard!");
+      };
 
-      if (data.score >= 85 && window.confetti) {
-        confetti({ particleCount: 100, spread: 60, origin: { y: 0.7 }, colors: ['#FF4B91', '#FFB800', '#10B981'] });
+      // FEATURE: Reveal Re-Imagine My Creative AI Prompt Generator for Low Scores (<=65/100)
+      if (data.score <= 65) {
+        reimagineContainer.classList.remove('hidden');
+        reimagineOutput.classList.add('hidden');
+      } else {
+        reimagineContainer.classList.add('hidden');
       }
     }
 
-    // PDF Generator Handler
-    exportPdfBtn.addEventListener('click', () => {
-      const element = document.getElementById('pdfReportContent');
-      const opt = {
-        margin:       0.3,
-        filename:     `Skeptic_AI_Audit_Report.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    // FEATURE: "Re-Imagine My Creative" AI Prompt Generation Logic
+    generatePromptBtn.addEventListener('click', async () => {
+      const apiKey = userApiKeyInput.value.trim();
+      if (!apiKey) {
+        alert("Please paste your Gemini API key in the top header!");
+        userApiKeyInput.focus();
+        return;
+      }
+
+      if (!currentAuditResult) return;
+
+      generatePromptBtn.disabled = true;
+      generatePromptBtn.innerHTML = `<span>Generating Fix Prompts... 🪄</span>`;
+
+      const promptText = `You are an expert AI art director and social ad creative designer. 
+Based on the following ad audit diagnostic findings for a low-scoring asset (${currentAuditResult.score}/100 stopping power):
+Platform: ${platformSelect.value}
+Objective: ${purposeSelect.value}
+Audit Recommendations/Fixes needed: ${JSON.stringify(currentAuditResult.fixes)}
+Strategic Diagnostic: ${currentAuditResult.verdict}
+
+Generate two redesign tools:
+1. "midjourney_prompt": A highly detailed, ready-to-use Midjourney/DALL-E 3 image prompt that fixes all visual friction points, improves contrast, visual hierarchy, and stopping power (include lighting, composition, camera style, color palette, and parameters like --ar 4:5 or --ar 9:16 based on platform).
+2. "canva_blueprint": A step-by-step layout design blueprint for Canva/Figma (specifying background colors, focal element placement, headline typography style, button/CTA color, and safe zone adjustments).`;
+
+      const jsonSchema = {
+        type: "OBJECT",
+        properties: {
+          midjourney_prompt: { type: "STRING" },
+          canva_blueprint: { type: "STRING" }
+        },
+        required: ["midjourney_prompt", "canva_blueprint"]
       };
-      html2pdf().set(opt).from(element).save();
-      showToast("Generating PDF Report...");
+
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              responseSchema: jsonSchema
+            }
+          })
+        });
+
+        const json = await res.json();
+        if (json.error) throw new Error(json.error.message);
+
+        const promptData = JSON.parse(json.candidates[0].content.parts[0].text);
+
+        midjourneyPromptBox.innerText = promptData.midjourney_prompt;
+        canvaBlueprintBox.innerText = promptData.canva_blueprint;
+        reimagineOutput.classList.remove('hidden');
+
+      } catch (err) {
+        alert("Failed to generate redesign prompt: " + err.message);
+        console.error(err);
+      } finally {
+        generatePromptBtn.disabled = false;
+        generatePromptBtn.innerHTML = `
+          <span>Generate Image Prompt for Fix</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        `;
+      }
     });
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      document.getElementById('toast-message').innerText = msg;
-      toast.classList.remove('translate-y-20', 'opacity-0');
-      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 2200);
-    }
+    // Copy Prompt Event Handlers
+    copyMidjourneyBtn.onclick = midjourneyPromptBox.onclick = () => {
+      const text = midjourneyPromptBox.innerText;
+      if (text && !text.includes('will appear here')) {
+        navigator.clipboard.writeText(text);
+        showToast("Copied Midjourney prompt to clipboard!");
+      }
+    };
+
+    copyCanvaBtn.onclick = canvaBlueprintBox.onclick = () => {
+      const text = canvaBlueprintBox.innerText;
+      if (text && !text.includes('will appear here')) {
+        navigator.clipboard.writeText(text);
+        showToast("Copied Canva blueprint to clipboard!");
+      }
+    };
   </script>
 </body>
 </html>
