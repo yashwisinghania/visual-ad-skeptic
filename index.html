@@ -134,7 +134,7 @@
         <textarea id="textCopyInput" rows="4" placeholder="Paste caption, video script breakdown, or slide text here..." class="w-full bg-brand-cream p-4 border border-gray-200 rounded-2xl focus:outline-none focus:border-brand-coral font-medium text-sm"></textarea>
       </div>
 
-      <!-- Upload Zone (Supports Batch Multiple File Selection) -->
+      <!-- Upload Zone -->
       <div id="dropZone" class="relative group border-3 border-dashed border-brand-coral/40 hover:border-brand-coral bg-rose-50/30 hover:bg-rose-50/80 rounded-3xl p-8 text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-center">
         <input type="file" id="fileInput" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30">
         <div class="w-12 h-12 bg-white rounded-2xl shadow-glow-coral flex items-center justify-center mb-3 group-hover:scale-110 transition-all duration-300">
@@ -143,9 +143,16 @@
         <p id="uploadPrompt" class="text-sm font-bold text-brand-dark">Drag & drop asset(s) here, or <span class="text-brand-coral underline">browse files</span></p>
         <p id="uploadFormatRules" class="text-xs text-gray-400 mt-1">Supports PNG, JPG, WebP (Upload multiple files for Batch Mode)</p>
       </div>
+
+      <!-- Unselect / Clear Uploads Button -->
+      <div id="clearAssetContainer" class="hidden mt-4 flex justify-end">
+        <button id="clearAssetBtn" class="bg-rose-100 text-rose-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-rose-200 transition-all flex items-center space-x-1">
+          <span>🗑️ Remove / Clear Uploaded Asset(s)</span>
+        </button>
+      </div>
     </div>
 
-    <!-- Batch Selection Grid (Only visible when multiple assets uploaded) -->
+    <!-- Batch Selection Grid -->
     <div id="batchContainer" class="hidden bg-white p-6 rounded-3xl shadow-soft border border-gray-100 mb-8">
       <h3 class="text-sm font-black uppercase tracking-wider text-gray-400 mb-4">📦 Batch Upload Variations (<span id="batchCount">0</span> Assets)</h3>
       <div id="batchGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4"></div>
@@ -170,7 +177,7 @@
       <div id="pdfReportContent" class="space-y-8 bg-brand-cream p-2">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
-          <!-- Asset Preview Card & Trigger -->
+          <!-- Asset Preview Card -->
           <div id="previewCard" class="lg:col-span-5 bg-white p-6 rounded-3xl shadow-soft border border-gray-100 flex flex-col items-center justify-between relative overflow-hidden min-h-[300px]">
             <div class="relative w-full rounded-2xl overflow-hidden bg-gray-900 shadow-md">
               <img id="imagePreview" class="w-full h-auto max-h-[380px] object-contain mx-auto block hidden" src="" alt="Asset Preview">
@@ -179,7 +186,6 @@
             
             <div class="w-full space-y-2 mt-6">
               <button id="auditBtn" class="w-full bg-brand-coral text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-brand-coral/30 hover:scale-[1.01] active:scale-95 transition-all">Run Comprehensive Audit 🚀</button>
-              <button id="compareRevisionBtn" class="hidden w-full bg-brand-dark text-white font-bold py-2.5 rounded-xl text-xs hover:bg-black transition-all">🔄 Upload Revision (v2 Comparison)</button>
             </div>
           </div>
 
@@ -211,7 +217,7 @@
               </div>
             </div>
 
-            <!-- Uncapped Comprehensive Verdict -->
+            <!-- Verdict -->
             <div class="bg-white p-6 rounded-3xl shadow-soft border border-gray-100">
               <h3 class="text-xs font-extrabold uppercase tracking-wider text-brand-coral mb-2">Detailed Strategic Diagnostic</h3>
               <div id="verdictText" class="text-brand-dark font-medium leading-relaxed text-sm whitespace-pre-line">Awaiting creative evaluation...</div>
@@ -220,7 +226,7 @@
 
         </div>
 
-        <!-- Dynamic Uncapped Fix Recommendations -->
+        <!-- Recommendations -->
         <div class="bg-white p-8 rounded-3xl shadow-soft border border-gray-100">
           <h3 class="text-base font-extrabold text-brand-dark mb-4 flex items-center gap-2">🛠️ Targeted Optimization Recommendations</h3>
           <div id="frictionList" class="space-y-3">
@@ -228,7 +234,7 @@
           </div>
         </div>
 
-        <!-- Copywriting & Hooks Suite -->
+        <!-- Copywriting Suite -->
         <div class="bg-white p-8 rounded-3xl shadow-soft border border-gray-100">
           <h3 class="text-base font-extrabold text-brand-dark mb-1">✍️ Native Copy & Hook Suite</h3>
           <p class="text-xs text-gray-400 mb-6">Click elements below to copy tailored headlines and caption text.</p>
@@ -275,11 +281,12 @@
     const imagePreview = document.getElementById('imagePreview');
     const laserScan = document.getElementById('laserScan');
     const auditBtn = document.getElementById('auditBtn');
-    const compareRevisionBtn = document.getElementById('compareRevisionBtn');
     const batchContainer = document.getElementById('batchContainer');
     const batchGrid = document.getElementById('batchGrid');
     const batchCount = document.getElementById('batchCount');
     const exportPdfBtn = document.getElementById('exportPdfBtn');
+    const clearAssetContainer = document.getElementById('clearAssetContainer');
+    const clearAssetBtn = document.getElementById('clearAssetBtn');
 
     // Drawer Elements
     const openHistoryBtn = document.getElementById('openHistoryBtn');
@@ -324,7 +331,19 @@
       });
     }
 
-    // Format selection toggle
+    // Clear Uploaded Assets
+    clearAssetBtn.onclick = () => {
+      assetQueue = [];
+      fileInput.value = '';
+      imagePreview.src = '';
+      imagePreview.classList.add('hidden');
+      batchContainer.classList.add('hidden');
+      resultsWorkspace.classList.add('hidden');
+      clearAssetContainer.classList.add('hidden');
+      showToast("Cleared uploaded asset(s)");
+    };
+
+    // Format Selection Toggle
     formatSelect.addEventListener('change', () => {
       if (formatSelect.value === 'Written Copy Only') {
         textInputWrapper.classList.remove('hidden');
@@ -371,6 +390,7 @@
 
     function setupQueueUI() {
       resultsWorkspace.classList.remove('hidden');
+      clearAssetContainer.classList.remove('hidden');
       resultsWorkspace.scrollIntoView({ behavior: 'smooth' });
 
       if (assetQueue.length > 1) {
@@ -397,7 +417,7 @@
       imagePreview.classList.remove('hidden');
     }
 
-    // Call API with Strict Response Schema
+    // Call API with Dual Diagnostic Compliance Prompt
     auditBtn.addEventListener('click', runOmnichannelAuditorCall);
 
     async function runOmnichannelAuditorCall() {
@@ -414,11 +434,10 @@
 
       laserScan.classList.remove('hidden');
       auditBtn.disabled = true;
-      auditBtn.innerText = "Analyzing Content Dynamics... 🧠";
+      auditBtn.innerText = "Analyzing Content & Compliance... 🧠";
 
-      const promptText = `Analyze this ${format} designed for ${platform} aiming for "${purpose}". Provide a deep agency-level diagnostic audit. Evaluate visual hierarchy, message clarity, and platform alignment. Do not artificially limit line counts or recommendations.`;
+      const promptText = `Analyze this ${format} designed for ${platform} aiming for "${purpose}". Perform a dual diagnostic: 1. COMPLIANCE & POLICY CHECK: Verify strict platform compliance (e.g., Personal Attributes rules on Meta, forbidden interactive overlays on TikTok, claim substantiation, safe zones). 2. PERFORMANCE & CREATIVE EVALUATION: Evaluate visual hierarchy, message clarity, hook strength, and platform alignment. Provide actionable agency-level feedback without truncating recommendations.`;
 
-      // Define strict JSON Schema to avoid UI breaks
       const jsonSchema = {
         type: "OBJECT",
         properties: {
@@ -479,7 +498,7 @@
         
         renderDashboardAnalytics(parsedResult);
 
-        // Store to local history
+        // Store in local history
         auditHistory.push({
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           platform: platform,
@@ -487,8 +506,6 @@
           data: parsedResult
         });
         localStorage.setItem('skeptic_audit_history', JSON.stringify(auditHistory));
-
-        compareRevisionBtn.classList.remove('hidden');
 
       } catch (err) {
         alert("API Error: " + err.message);
